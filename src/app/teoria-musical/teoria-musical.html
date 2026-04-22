@@ -1,0 +1,247 @@
+<div class="page">
+  <nav class="topbar">
+    <a routerLink="/" class="back-link">&larr; Início</a>
+    <h1>Teoria Musical</h1>
+  </nav>
+
+  <div class="mode-tabs">
+    <button [class.active]="mode() === 'scale'" (click)="setMode('scale')">Escalas</button>
+    <button [class.active]="mode() === 'chord'" (click)="setMode('chord')">Acordes</button>
+    <button [class.active]="mode() === 'interval'" (click)="setMode('interval')">Intervalos</button>
+  </div>
+
+  <!-- Note selector -->
+  <section class="panel">
+    <h2>@if (mode() === 'interval') { Primeira nota } @else { Nota fundamental }</h2>
+    <div class="note-selector">
+      @for (group of noteGroups; track $index) {
+        <div class="note-group" [class.accidental]="!group.natural">
+          @if (group.natural) {
+            <button
+              class="note-btn natural"
+              [class.active]="selectedNote() === group.natural"
+              (click)="selectNote(group.natural)">
+              {{ group.natural }}
+            </button>
+          }
+          @if (group.sharp) {
+            <button
+              class="note-btn sharp"
+              [class.active]="selectedNote() === group.sharp"
+              (click)="selectNote(group.sharp)">
+              {{ group.sharp }}
+            </button>
+          }
+          @if (group.flat) {
+            <button
+              class="note-btn flat"
+              [class.active]="selectedNote() === group.flat"
+              (click)="selectNote(group.flat)">
+              {{ group.flat }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+  </section>
+
+  <!-- Second note for interval mode -->
+  @if (mode() === 'interval') {
+    <section class="panel">
+      <h2>Segunda nota</h2>
+      <div class="note-selector">
+        @for (group of noteGroups; track $index) {
+          <div class="note-group" [class.accidental]="!group.natural">
+            @if (group.natural) {
+              <button
+                class="note-btn natural"
+                [class.active]="selectedNote2() === group.natural"
+                (click)="selectNote2(group.natural)">
+                {{ group.natural }}
+              </button>
+            }
+            @if (group.sharp) {
+              <button
+                class="note-btn sharp"
+                [class.active]="selectedNote2() === group.sharp"
+                (click)="selectNote2(group.sharp)">
+                {{ group.sharp }}
+              </button>
+            }
+            @if (group.flat) {
+              <button
+                class="note-btn flat"
+                [class.active]="selectedNote2() === group.flat"
+                (click)="selectNote2(group.flat)">
+                {{ group.flat }}
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- Scale type selector -->
+  @if (mode() === 'scale') {
+    <section class="panel">
+      <h2>Tipo de escala</h2>
+      <div class="type-selector">
+        @for (name of scaleNames; track name) {
+          <button
+            [class.active]="selectedScale() === name"
+            (click)="selectScale(name)">
+            {{ name }}
+          </button>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- Chord type selector -->
+  @if (mode() === 'chord') {
+    <section class="panel">
+      <h2>Tipo de acorde</h2>
+      <div class="type-selector">
+        @for (name of chordNames; track name) {
+          <button
+            [class.active]="selectedChord() === name"
+            (click)="selectChord(name)">
+            {{ name }}
+          </button>
+        }
+      </div>
+    </section>
+  }
+
+  <!-- Scale result -->
+  @if (mode() === 'scale' && scaleResult(); as result) {
+    <section class="panel result">
+      <h2>{{ result.title }}</h2>
+      <div class="notes-display">
+        @for (note of result.notes; track $index) {
+          @if ($index > 0) { <span class="separator">-</span> }
+          <span class="note-badge">{{ note }}</span>
+        }
+      </div>
+
+      @for (diagram of result.diagrams; track diagram.tuningName) {
+        <div class="fretboard-section">
+          <h3>{{ diagram.tuningLabel }}</h3>
+          <div class="fretboard-scroll">
+            <table class="fretboard">
+              <thead>
+                <tr>
+                  <th class="string-label"></th>
+                  @for (f of fretNumbers; track f) {
+                    <th [class.nut]="f === 0">{{ f }}</th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of diagram.rows; track row.stringNumber) {
+                  <tr>
+                    <td class="string-label">{{ row.openNote }} ({{ row.stringNumber }}&ordf;)</td>
+                    @for (cell of row.cells; track cell.fret) {
+                      <td
+                        [class.has-note]="cell.note"
+                        [class.is-root]="cell.isRoot"
+                        [class.nut]="cell.fret === 0">
+                        @if (cell.note) {
+                          <span class="fret-note">{{ cell.note }}</span>
+                        } @else {
+                          <span class="fret-dot">&middot;</span>
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+    </section>
+  }
+
+  <!-- Chord result -->
+  @if (mode() === 'chord' && chordResult(); as result) {
+    <section class="panel result">
+      <h2>{{ result.title }}</h2>
+      <div class="notes-display">
+        @for (note of result.notes; track $index) {
+          @if ($index > 0) { <span class="separator">-</span> }
+          <span class="note-badge">{{ note }}</span>
+        }
+      </div>
+
+      <div class="chord-frets-section">
+        <h3>Posições nos instrumentos</h3>
+        @for (cf of result.frets; track cf.tuningLabel) {
+          <div class="chord-fret-row">
+            <span class="tuning-label">{{ cf.tuningLabel }}</span>
+            <span class="tuning-strings">({{ cf.tuningStrings.join('-') }})</span>
+            <div class="fret-badges">
+              @for (f of cf.frets; track $index) {
+                <span class="fret-badge" [class.muted]="f === null">{{ formatFret(f) }}</span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+
+      @for (diagram of result.diagrams; track diagram.tuningName) {
+        <div class="fretboard-section">
+          <h3>{{ diagram.tuningLabel }}</h3>
+          <div class="fretboard-scroll">
+            <table class="fretboard">
+              <thead>
+                <tr>
+                  <th class="string-label"></th>
+                  @for (f of fretNumbers; track f) {
+                    <th [class.nut]="f === 0">{{ f }}</th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of diagram.rows; track row.stringNumber) {
+                  <tr>
+                    <td class="string-label">{{ row.openNote }} ({{ row.stringNumber }}&ordf;)</td>
+                    @for (cell of row.cells; track cell.fret) {
+                      <td
+                        [class.has-note]="cell.note"
+                        [class.is-root]="cell.isRoot"
+                        [class.nut]="cell.fret === 0">
+                        @if (cell.note) {
+                          <span class="fret-note">{{ cell.note }}</span>
+                        } @else {
+                          <span class="fret-dot">&middot;</span>
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+    </section>
+  }
+
+  <!-- Interval result -->
+  @if (mode() === 'interval' && intervalResult(); as result) {
+    <section class="panel result">
+      <h2>Intervalo</h2>
+      <div class="interval-display">
+        <span class="note-badge large">{{ result.note1 }}</span>
+        <span class="arrow">&rarr;</span>
+        <span class="note-badge large">{{ result.note2 }}</span>
+      </div>
+      <div class="interval-info">
+        <div class="interval-value">{{ result.semitones }} semitom{{ result.semitones !== 1 ? 's' : '' }}</div>
+        <div class="interval-name">{{ result.name }}</div>
+      </div>
+    </section>
+  }
+</div>
