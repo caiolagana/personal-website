@@ -73,6 +73,7 @@ export const TUNINGS: Tuning[] = [
   { name: 'viola_caipira_rio_abaixo', label: 'Viola Caipira (Rio Abaixo)', strings: ['G', 'D', 'G', 'B', 'D'] },
   { name: 'viola_caipira_cebolao_D', label: 'Viola Caipira (Cebolão em D)', strings: ['A', 'D', 'F#', 'A', 'D'] },
   { name: 'viola_caipira_cebolao_E', label: 'Viola Caipira (Cebolão em E)', strings: ['E', 'B', 'G#', 'E', 'B'] },
+  { name: 'violao', label: 'Violão', strings: ['E', 'A', 'D', 'G', 'B', 'E'] },
 ];
 
 export const MAX_FRET = 14;
