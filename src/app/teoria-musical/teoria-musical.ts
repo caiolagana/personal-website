@@ -1,4 +1,4 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, signal, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import {
   NOTE_GROUPS,
@@ -16,8 +16,16 @@ import {
   type ChordFrets,
   type NoteGroup,
 } from './music-theory';
+import { ScoreService } from './score.service';
+import { Score, ChordMark } from './score.model';
 
 type Mode = 'scale' | 'chord' | 'interval';
+type Tab = 'teoria' | 'scores';
+
+interface ScoreLine {
+  chordLine: string;
+  lyricLine: string;
+}
 
 @Component({
   selector: 'app-teoria-musical',
@@ -25,13 +33,20 @@ type Mode = 'scale' | 'chord' | 'interval';
   templateUrl: './teoria-musical.html',
   styleUrl: './teoria-musical.scss',
 })
-export class TeoriaMusical {
+export class TeoriaMusical implements OnInit {
+  private scoreService = inject(ScoreService);
+
+  scores = signal<Score[]>([]);
+  selectedScore = signal<Score | null>(null);
+  scoreLines = signal<ScoreLine[]>([]);
+
   readonly noteGroups: NoteGroup[] = NOTE_GROUPS;
   readonly scaleNames = Object.keys(SCALE_FORMULAS);
   readonly chordNames = Object.keys(CHORD_FORMULAS);
   readonly maxFret = MAX_FRET;
   readonly fretNumbers = Array.from({ length: MAX_FRET + 1 }, (_, i) => i);
 
+  readonly tab = signal<Tab>('teoria');
   readonly mode = signal<Mode>('scale');
   readonly selectedNote = signal<string | null>(null);
   readonly selectedNote2 = signal<string | null>(null);
@@ -92,5 +107,53 @@ export class TeoriaMusical {
 
   formatFret(fret: number | null): string {
     return fret === null ? 'X' : String(fret);
+  }
+
+  ngOnInit() {
+    this.scoreService.getScores().subscribe(scores => this.scores.set(scores));
+  }
+
+  openScore(score: Score) {
+    this.selectedScore.set(score);
+    this.scoreLines.set(this.buildScoreLines(score));
+  }
+
+  closeScore() {
+    this.selectedScore.set(null);
+    this.scoreLines.set([]);
+  }
+
+  private buildScoreLines(score: Score): ScoreLine[] {
+    const lines = score.lyrics.split('\n');
+    const chordsByLine: Map<number, ChordMark[]> = new Map();
+
+    let globalPos = 0;
+    for (let i = 0; i < lines.length; i++) {
+      const lineStart = globalPos;
+      const lineEnd = globalPos + lines[i].length;
+      const lineChords = score.chords
+        .filter(c => c.position >= lineStart && c.position < lineEnd)
+        .map(c => ({ ...c, position: c.position - lineStart }));
+      if (lineChords.length > 0) {
+        chordsByLine.set(i, lineChords);
+      }
+      globalPos = lineEnd + 1;
+    }
+
+    return lines.map((line, i) => {
+      const lineChords = chordsByLine.get(i) || [];
+      let chordLine = '';
+      if (lineChords.length > 0) {
+        const chars = new Array(line.length).fill(' ');
+        for (const cm of lineChords) {
+          const name = cm.chord;
+          for (let j = 0; j < name.length && cm.position + j < chars.length; j++) {
+            chars[cm.position + j] = name[j];
+          }
+        }
+        chordLine = chars.join('').trimEnd();
+      }
+      return { chordLine, lyricLine: line };
+    });
   }
 }

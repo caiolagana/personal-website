@@ -1,9 +1,13 @@
 <div class="page">
   <nav class="topbar">
     <a routerLink="/" class="back-link">&larr; Início</a>
-    <h1>Teoria Musical</h1>
+    <div class="top-tabs">
+      <button [class.active]="tab() === 'teoria'" (click)="tab.set('teoria')">Teoria</button>
+      <button [class.active]="tab() === 'scores'" (click)="tab.set('scores')">Scores</button>
+    </div>
   </nav>
 
+  @if (tab() === 'teoria') {
   <div class="mode-tabs">
     <button [class.active]="mode() === 'scale'" (click)="setMode('scale')">Escalas</button>
     <button [class.active]="mode() === 'chord'" (click)="setMode('chord')">Acordes</button>
@@ -243,5 +247,38 @@
         <div class="interval-name">{{ result.name }}</div>
       </div>
     </section>
+  }
+  }
+
+  @if (tab() === 'scores') {
+    @if (selectedScore(); as score) {
+      <button class="back-btn" (click)="closeScore()">&larr; Voltar</button>
+      <section class="panel score-view">
+        <h2>{{ score.title }}</h2>
+        <p class="score-artist">{{ score.artist }}</p>
+        <div class="score-sheet">
+          @for (line of scoreLines(); track $index) {
+            <div class="score-line">
+              @if (line.chordLine) {
+                <div class="chord-line">{{ line.chordLine }}</div>
+              }
+              <div class="lyric-line">{{ line.lyricLine }}</div>
+            </div>
+          }
+        </div>
+      </section>
+    } @else {
+      @if (scores().length === 0) {
+        <section class="panel">
+          <p class="placeholder-text">Nenhuma cifra cadastrada.</p>
+        </section>
+      }
+      @for (score of scores(); track score.id) {
+        <button class="score-item" (click)="openScore(score)">
+          <span class="score-title">{{ score.title }}</span>
+          <span class="score-artist">{{ score.artist }}</span>
+        </button>
+      }
+    }
   }
 </div>

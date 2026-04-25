@@ -14,7 +14,17 @@ $td: #777;
   display: flex; align-items: center; gap: 1.5rem; padding: 1.5rem 0;
   border-bottom: 1px solid $bd; margin-bottom: 2rem;
   .back-link { color: $td; text-decoration: none; font-size: .95rem; &:hover { color: $a; } }
-  h1 { font-size: 1.5rem; font-weight: 300; margin: 0; letter-spacing: 1px; }
+}
+
+.top-tabs {
+  display: flex; gap: .25rem;
+  button {
+    background: none; border: none; border-bottom: 2px solid transparent;
+    color: $td; font-size: 1.25rem; font-weight: 300; letter-spacing: 1px;
+    padding: .25rem .75rem; cursor: pointer;
+    &:hover { color: $t; }
+    &.active { color: $t; border-bottom-color: $a; }
+  }
 }
 
 .mode-tabs {
@@ -108,6 +118,40 @@ $td: #777;
 .interval-info { text-align: center; margin-top: 1rem; }
 .interval-value { font-size: 1.8rem; font-weight: 300; color: $a; }
 .interval-name { font-size: 1.2rem; color: $t; margin-top: .25rem; text-transform: capitalize; }
+.placeholder-text { color: $td; font-style: italic; margin: 0; }
+
+.back-btn {
+  background: none; border: none; color: $td; font-size: .95rem; cursor: pointer;
+  padding: 0; margin-bottom: 1rem;
+  &:hover { color: $a; }
+}
+
+.score-item {
+  display: flex; flex-direction: column; gap: .25rem; width: 100%; text-align: left;
+  background: $pb; border: 1px solid $bd; border-radius: 10px; padding: 1rem 1.25rem;
+  cursor: pointer; margin-bottom: .5rem;
+  &:hover { border-color: $ad; }
+  .score-title { color: $t; font-size: 1.05rem; font-weight: 500; }
+  .score-artist { color: $td; font-size: .85rem; }
+}
+
+.score-view {
+  .score-artist { color: $td; font-size: .9rem; margin: 0 0 1.5rem; }
+}
+
+.score-sheet {
+  font-family: 'Courier New', Courier, monospace; font-size: .9rem; line-height: 1.2;
+  overflow-x: auto;
+}
+
+.score-line { margin-bottom: .25rem; }
+
+.chord-line {
+  white-space: pre; color: $a; font-weight: 600; font-size: .85rem;
+  min-height: 1.2em;
+}
+
+.lyric-line { white-space: pre; color: $t; }
 
 @media (max-width: 600px) {
   .page { padding: 0 1rem 3rem; }
